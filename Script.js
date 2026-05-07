@@ -4,6 +4,39 @@ let PRODUCTS = [];
 let currentProduct = null;
 let selectedSize = '';
 let selectedColor = '';
+// ─── TOGGLE SEARCH ───
+function toggleSearch() {
+  const dropdown = document.getElementById('navSearchDropdown');
+  const input = document.getElementById('searchInput');
+  const isOpen = dropdown.classList.toggle('open');
+  if (isOpen) {
+    setTimeout(() => input.focus(), 300);
+  } else {
+    input.value = '';
+    renderProducts('all');
+  }
+}
+
+// Close when clicking outside
+// ─── GLOBAL CLICK HANDLER ───
+document.addEventListener('click', (e) => {
+
+  // Search dropdown close
+  const dropdown = document.getElementById('navSearchDropdown');
+  const icon = document.getElementById('navSearchIcon');
+  if (dropdown && dropdown.classList.contains('open') &&
+      !dropdown.contains(e.target) &&
+      !icon.contains(e.target)) {
+    toggleSearch();
+  }
+
+  // Image zoom toggle
+  if (e.target && e.target.id === 'modalMainImg') {
+    scale = scale === 1 ? 2.5 : 1;
+    applyTransform();
+  }
+
+});
 
 async function loadProducts() {
   try {
@@ -70,7 +103,68 @@ function renderProducts(filter = 'all') {
     </div>
   `).join('');
 }
+// ─── SEARCH ───
+function searchProducts(query) {
+  const grid = document.getElementById('productsGrid');
+  document.getElementById('products')
+    .scrollIntoView({ behavior: 'smooth', block: 'start' });
 
+  if (!query || query.trim() === '') {
+    renderProducts('all');
+    return;
+  }
+
+  const q = query.toLowerCase().trim();
+  const filtered = PRODUCTS.filter(p =>
+    p.name.toLowerCase().includes(q) ||
+    p.cat.toLowerCase().includes(q) ||
+    p.id.toLowerCase().includes(q) ||
+    (p.desc && p.desc.toLowerCase().includes(q)) ||
+    (p.specs.Material && p.specs.Material.toLowerCase().includes(q)) ||
+    (p.specs.Finish && p.specs.Finish.toLowerCase().includes(q))
+  );
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="search-no-results">
+        <span>🔍</span>
+        No products found for "<strong>${query}</strong>"
+        <br><br>
+        <button class="btn-primary" onclick="clearSearch()">Clear Search</button>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" onclick="openModal('${p.id}')">
+      <div class="product-card-img">
+        <div class="product-card-img-inner">
+          <img src="${p.images[0] || ''}" alt="${p.name}" loading="lazy">
+        </div>
+        <div class="product-article-badge">${p.id}</div>
+        <div class="product-cat-badge">${p.cat ? p.cat.split(' ')[0] : ''}</div>
+      </div>
+      <div class="product-card-body">
+        <div class="product-card-name">${p.name}</div>
+        <div class="product-card-desc">${(p.desc || '').substring(0, 80)}…</div>
+        <div class="product-card-footer">
+          <div class="product-card-article">${p.id}</div>
+          <button class="btn-details" onclick="event.stopPropagation(); openModal('${p.id}')">
+            View Details
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  renderProducts('all');
+}
 // ─── FILTER ───
 function filterProducts(cat, btn) {
   renderProducts(cat);
@@ -175,6 +269,7 @@ document.getElementById('modalNext').onclick = () => {
 };
 // ─── THUMBNAIL CLICK ───
 function setThumb(el, src) {
+  resetZoom();
   document.getElementById('modalMainImg').src = src;
   document.querySelectorAll('.modal-thumb').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
@@ -205,16 +300,6 @@ function updateWaButton() {
   document.getElementById('modalWaBtn').onclick = () => window.open(waUrl, '_blank');
 }
 
-// ─── MODAL CLOSE ───
-function closeModal(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModalBtn();
-}
-
-function closeModalBtn() {
-  document.getElementById('modalOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  currentProduct = null;
-}
 
 // ─── CONTACT WHATSAPP ───
 function submitContactWhatsApp() {
@@ -238,8 +323,13 @@ function toggleMenu() {
   const burger = document.getElementById('hamburger');
   menu.classList.toggle('open');
   burger.classList.toggle('open');
-}
 
+  // Clear search when closing menu
+  if (!menu.classList.contains('open')) {
+    const mobileInput = document.getElementById('mobileSearchInput');
+    if (mobileInput) mobileInput.value = '';
+  }
+}
 // ─── ESC KEY ───
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModalBtn();
@@ -286,25 +376,12 @@ function applyTransform() {
 }
 
 // Reset zoom when modal closes
-const originalCloseModalBtn = closeModalBtn;
-closeModalBtn = function() {
-  resetZoom();
-  originalCloseModalBtn();
+function closeModalBtn() {
+  resetZoom(); // ← add here
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentProduct = null;
 }
-
-// Reset zoom when thumbnail changes
-const originalSetThumb = setThumb;
-setThumb = function(el, src) {
-  resetZoom();
-  originalSetThumb(el, src);
-}
-
-document.addEventListener('click', (e) => {
-  if (e.target && e.target.id === 'modalMainImg') {
-    scale = scale === 1 ? 2.5 : 1;
-    applyTransform();
-  }
-});
 
 // ─── DESKTOP DRAG ───
 document.addEventListener('mousedown', (e) => {
