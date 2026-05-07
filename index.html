@@ -16,8 +16,16 @@
 <nav id="nav">
   <a href="#" class="nav-logo">
     <img src="logo.png" alt="Prime Buckle" class="nav-logo-img">
-<span class="nav-logo-text">Prime<span>Buckle</span></span>
+    <span class="nav-logo-text">Prime<span>Buckle</span></span>
   </a>
+
+  <!-- Search Icon Button — nav ke andar sirf icon -->
+  <button class="nav-search-icon" id="navSearchIcon" onclick="toggleSearch()" aria-label="Search">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+  </button>
+
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
     <li><a href="#categories">Categories</a></li>
@@ -30,10 +38,30 @@
       </a>
     </li>
   </ul>
+
   <div class="hamburger" id="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
   </div>
 </nav>
+
+<!-- ─── SEARCH DROPDOWN — nav ke bilkul baad, bahar ─── -->
+<div class="nav-search-dropdown" id="navSearchDropdown">
+  <div class="nav-search-inner">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search buckles by name, category, material..."
+      oninput="searchProducts(this.value)"
+      onkeydown="if(event.key==='Escape') toggleSearch()"
+    >
+    <button class="nav-search-close" onclick="toggleSearch()">✕</button>
+  </div>
+</div>
+
+<!-- ─── MOBILE NAV MENU ─── -->
 <div class="nav-mobile" id="navMobile">
   <a href="#about" onclick="toggleMenu()">About</a>
   <a href="#categories" onclick="toggleMenu()">Categories</a>
@@ -41,7 +69,6 @@
   <a href="#contact" onclick="toggleMenu()">Contact</a>
   <a href="https://wa.me/923454105434" target="_blank" style="color:#25D366 !important;">WhatsApp Inquiry</a>
 </div>
-
 <!-- ─── HERO ─── -->
 <section id="hero">
   <div class="hero-video-placeholder"></div>
@@ -201,7 +228,8 @@
       <button class="filter-btn" onclick="filterProducts('Decorative Buckles', this)">Decorative Buckles</button>
       <button class="filter-btn" onclick="filterProducts('Formal Shoe Buckles', this)">Formal</button>
       <button class="filter-btn" onclick="filterProducts('Casual Shoe Buckles', this)">Casual</button>
-      <button class="filter-btn" onclick="filterProducts('Custom Design Buckles', this)">Custom</button>
+      <button class="filter-btn" onclick="filterProducts('Custom', this)">Custom</button>
+      <button class="filter-btn" onclick="filterProducts('Chain Article', this)">Chain Article</button>
     </div>
     <div class="products-grid" id="productsGrid"></div>
   </div>
